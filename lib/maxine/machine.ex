@@ -6,21 +6,23 @@ defmodule Maxine.Machine do
   """
   @type state_name :: atom
   @type event_name :: atom
-  @type name :: state_name | event_name
-  @type options :: any
-  @type callback :: (state_name, state_name, event_name, options -> %Data{})
+  @type cb_name :: atom
+  @type name :: state_name | event_name | cb_name
 
-  @type callback_set :: %{required(name) => callback | [callback]}
+  @type event_options :: []
+  @type callback :: (from :: state_name, to :: state_name, event_name, event_options -> %Data{})
+  @type cb_listing :: %{required(name) => cb_name | [cb_name]}
+  @type cb_index :: %{required(cb_name) => callback}
 
-  @type transition_index :: %{required(event_name) => %{required(state_name) => state_name}}
-  @type callback_index :: %{entering: callback_set, leaving: callback_set, events: callback_set}
-  @type alias_index :: %{required(name) => [name]}
+  @type transition_map :: %{required(event_name) => %{required(state_name) => state_name}}
+  @type callback_map :: %{entering: cb_listing, leaving: cb_listing, events: cb_listing, index: cb_index}
+  @type alias_map :: %{required(name) => [name]}
 
   @type t :: %__MODULE__{
     initial: state_name,
-    transitions: transition_index,
-    callbacks: callback_index,
-    aliases: alias_index
+    transitions: transition_map,
+    callbacks: callback_map,
+    aliases: alias_map
   }
 
   @enforce_keys [:initial, :transitions, :callbacks, :aliases]

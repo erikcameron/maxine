@@ -1,9 +1,11 @@
 defmodule Maxine.Data do
+  @type sections :: :app | :options | :tmp
+  @type section :: %{}
   @type t :: %__MODULE__{
-    app: %{},
-    maxine: %{},
-    tmp: %{}
+    app: section,
+    options: section,
+    tmp: section
   }
 
-  defstruct app: %{}, maxine: %{}, tmp: %{}
+  defstruct app: %{}, options: %{}, tmp: %{}
 end
