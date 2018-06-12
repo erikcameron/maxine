@@ -6,21 +6,27 @@ defmodule Maxine.Errors do
     defexception message: "No such event"
   end
 
-  defmodule BadMoveError do
+  defmodule UnavailableEventError do
     @moduledoc """
     When the event has no transition mapped for the present
     state.
     """
-    defexception message: "bad move"
+    defexception message: "event unavailable"
   end
 
-  defmodule BadCallbackError do
+  defmodule NoSuchCallbackError do
     @moduledoc """
-    When a machine requests a non-existent callback function,
-    or when a key in the callback index is set to something
-    other than a function.
+    When a machine requests a non-existent callback function.
     """
     defexception message: "bad callback"
+  end
+
+  defmodule CallbackReturnError do
+    @moduledoc """
+    When a machine returns something other than a %Data{} or
+    a %CallbackError.
+    """
+    defexception message: "bad callback return"
   end
 
   defmodule CallbackError do
@@ -34,16 +40,18 @@ defmodule Maxine.Errors do
 
   defmodule MachineError do
     @moduledoc """
-    For invalid machines only, or bugs in Maxine itself.
-    Binds unplanned for results to cause for more info.
+    When applying the API to your machine yields unhandleable
+    results; back to the drawing board. (It's probably a type
+    error of one kind or another.)
     """
     defexception message: "callback failed", cause: nil
   end
 
   @type error :: 
     %NoSuchEventError{}
-    | %BadMoveError{}
-    | %BadCallbackError{}
+    | %UnavailableEventError{}
+    | %NoSuchCallbackError{}
+    | %CallbackReturnError{}
     | %CallbackError{}
     | %MachineError{}
 end

@@ -4,8 +4,9 @@ defmodule Maxine do
   alias Maxine.Data
   alias Maxine.Errors.{ 
     NoSuchEventError,
-    BadMoveError, 
-    BadCallbackError,
+    UnavailableEventError, 
+    NoSuchCallbackError,
+    CallbackReturnError, 
     CallbackError, 
     MachineError 
   }
@@ -51,10 +52,12 @@ defmodule Maxine do
   ) :: %State{}
 
   def generate(%Machine{} = machine, initial \\ nil) do
-    %State{name: (initial || machine.initial), 
+    %State{
+      name: (initial || machine.initial), 
       previous: nil, 
       machine: machine, 
-      data: %Data{}}
+      data: %Data{}
+    }
   end
 
   @doc """
@@ -75,13 +78,15 @@ defmodule Maxine do
         next_event when is_atom(next_event) -> advance(state, next_event, next_options(state))
       end
     else
-      err = %NoSuchEventError{} -> {:error, err} 
-      err = %BadMoveError{}  -> {:error, err} 
-      err = %BadCallbackError{} -> {:error, err} 
-      err = %CallbackError{}    -> {:error, err}
-      err = %MachineError{}     -> {:error, err}
-      cause -> {:error, %MachineError{message: "Advance failed!", cause: cause}}
+      err = %NoSuchEventError{}       -> {:error, err} 
+      err = %UnavailableEventError{}  -> {:error, err} 
+      err = %NoSuchCallbackError{}    -> {:error, err} 
+      err = %CallbackReturnError{}    -> {:error, err} 
+      err = %CallbackError{}          -> {:error, err}
+      err = %MachineError{}           -> {:error, err}
     end
+  rescue
+    error -> {:error, %MachineError{message: "advance/3 failed, see cause", cause: error}} 
   end
 
   @doc """
@@ -152,20 +157,20 @@ defmodule Maxine do
     current :: %State{}, 
     event   :: Machine.event_name, 
     options :: Machine.event_options
-  ) :: %State{} | %BadMoveError{} | %NoSuchEventError{}
+  ) :: %State{} | %UnavailableEventError{} | %NoSuchEventError{}
 
   defp resolve_next_state(current, event, options) do
     with  %Pass{} <- next_state_for(current.name, current, event, options),
-          #### THIS IS THE LINE BLOWING UP YOUR TESTS, it's something about the return value of Enum.find_value that
-          #you don't understand
-          %Pass{} <- Enum.find_value(aliases_for(current.name, current.machine), fn(x) -> next_state_for(x, current, event, options) end),
+          # The "|| %Pass{}" at the end is for cases where the alias list is empty
+          %Pass{} <- Enum.find_value(aliases_for(current.name, current.machine), 
+                            fn(x) -> next_state_for(x, current, event, options) end) || %Pass{},
           %Pass{} <- next_state_for(:*, current, event, options)
     do
-      %BadMoveError{message: "No mapping for event #{event} in state #{current.name}"}
+      %UnavailableEventError{message: "Event #{event} not available in state #{current.name}"}
     else
-      state = %State{}            -> state 
-      err   = %BadMoveError{}     -> err
-      err   = %NoSuchEventError{} -> err
+      state = %State{}                  -> state 
+      error = %UnavailableEventError{}  -> error
+      error = %NoSuchEventError{}       -> error
     end
   end
 
@@ -194,7 +199,6 @@ defmodule Maxine do
       state 
     else
       [error = %NoSuchEventError{}] -> error
-      error = %BadMoveError{} -> error
       nil -> %Pass{}
     end
   end
@@ -229,8 +233,10 @@ defmodule Maxine do
   defp run_callbacks(current, event) do
     cb_list = build_callbacks(current.machine, current.previous, current.name, event)
     case call_callbacks(cb_list, current.previous, current.name, event, current.data) do
-      data  = %Data{}          -> Map.merge(current, %{data: data}) 
-      error = %CallbackError{} -> error 
+      data  = %Data{}                 -> Map.merge(current, %{data: data}) 
+      error = %NoSuchCallbackError{}  -> error 
+      error = %CallbackReturnError{}  -> error 
+      error = %CallbackError{}        -> error 
     end
   end
 
@@ -253,11 +259,11 @@ defmodule Maxine do
       Enum.map(all_names_for(to, machine), fn(name) -> Map.get(machine.callbacks[:entering], name, []) end) ++ 
       Enum.map(all_names_for(event, machine), fn(name) -> Map.get(machine.callbacks[:events], name, []) end) 
     |> List.flatten
-    |> Enum.map(fn(cb) -> Map.get(machine.callbacks.index, cb, %BadCallbackError{message: cb}) end)
+    |> Enum.map(fn(cb) -> machine.callbacks.index[cb] || %NoSuchCallbackError{message: cb} end)
   end
 
-  # Given a list of callbacks, run them recursively, allowing each to alter
-  # the data field (but nothing else). Callbacks (see `Machine.callback`)
+  # Given a list of callbacks, run them recursively, allowing each to inject a
+  # new data record into the process (but nothing else). Callbacks (see `Machine.callback`)
   # take names of the from state, to state and event, along with the %Data{},
   # and return either a new %Data{} or a %CallbackError{}, which will halt
   # the chain and cause `advance/3` to fail. Additionally, a missing function
@@ -271,17 +277,18 @@ defmodule Maxine do
     to            :: Machine.state_name, 
     event         :: Machine.event_name, 
     data          :: %Data{}
-  ) :: %Data{} | %CallbackError{} 
+  ) :: %Data{} | %CallbackError{} | %CallbackReturnError{} | %NoSuchCallbackError{}
 
   defp call_callbacks([this_cb | rest], from, to, event, data) do
-    case this_cb do
+    case this_cb do 
       this_cb when is_function(this_cb) -> 
         case this_cb.(from, to, event, data) do
           new_data = %Data{}          -> call_callbacks(rest, from, to, event, new_data)
           error    = %CallbackError{} -> error
+          _ -> %CallbackReturnError{message: "Illegal return (event #{event}, from #{from}, to #{to}"}
         end
-      error = %BadCallbackError{} -> error
-    end 
+      error = %NoSuchCallbackError{} -> error
+    end
   end
   defp call_callbacks([], _, _, _, data), do: data
 
@@ -307,7 +314,7 @@ defmodule Maxine do
   end
 
   # aliases for the name of an event or state
-  @spec all_names_for(Machine.name, %Machine{}) :: [Machine.name]
+  @spec aliases_for(Machine.name, %Machine{}) :: [Machine.name]
   defp aliases_for(name, machine) do
     Map.get(machine.aliases, name, []) |> List.wrap
   end

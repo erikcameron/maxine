@@ -29,6 +29,13 @@ defmodule Maxine.Examples do
 
     # @spec halting_callback(Machine.state_name, Machine.state_name, Machine.event_name, %Data{}) :: %Data{}
     def halting_callback(_, _, _, _), do: %CallbackError{message: "halted"}
+    
+    def misguided_return(_, _, _, _), do: "foo!"
+
+    # For testing automatic event firing
+    def delivery_robot(_, _, _, %Data{} = data) do
+      request(data, :delivered_by_robot, robot: "yes")
+    end
   end 
 
   defmodule Package do
@@ -38,6 +45,9 @@ defmodule Maxine.Examples do
     @machine %Machine{
       initial: :origin,
       transitions: %{ 
+        weigh: %{
+          origin: :weighed
+        },
         ship: %{ 
           origin: :in_transit, 
           in_transit: :delivered 
@@ -54,6 +64,12 @@ defmodule Maxine.Examples do
         },
         confirm: %{
           delivered: :confirmed
+        },
+        automate: %{
+          origin: :robot_delivery
+        },
+        delivered_by_robot: %{
+          robot_delivery: :delivered
         }
       },
       aliases: %{
@@ -67,6 +83,7 @@ defmodule Maxine.Examples do
           shipped: :entered_shipping,
           gone_away_to_the_forever_hole: :lament,
           under_the_couch: :non_existent_callback,
+          weighed: :misguided_return_value,
           *: :all_entering,
         },
         leaving: %{ 
@@ -78,6 +95,7 @@ defmodule Maxine.Examples do
           ship: :on_ship,
           move_around: :moved_around,
           confirm: :halting_callback,
+          automate: :delivery_robot,
           *: [:all_events, :log]
         },
         index: %{
@@ -92,6 +110,8 @@ defmodule Maxine.Examples do
           all_events: &all_events/4,
           lament: &lament/4,
           halting_callback: &halting_callback/4,
+          misguided_return_value: &misguided_return/4,
+          delivery_robot: &delivery_robot/4, 
           log: &log/4
         }
       }
