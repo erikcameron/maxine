@@ -83,7 +83,6 @@ defmodule Maxine do
       err = %NoSuchCallbackError{}    -> {:error, err} 
       err = %CallbackReturnError{}    -> {:error, err} 
       err = %CallbackError{}          -> {:error, err}
-      err = %MachineError{}           -> {:error, err}
     end
   rescue
     error -> {:error, %MachineError{message: "advance/3 failed, see cause", cause: error}} 
@@ -98,7 +97,7 @@ defmodule Maxine do
     options :: Machine.event_options
   ) :: %State{} | no_return
 
-  def advance!(%State{} = current, event, options \\ %{}) do
+  def advance!(%State{} = current, event, options \\ []) do
     case advance(current, event, options) do
       {:ok, state = %State{} } -> state
       {:error, error }         -> raise error
