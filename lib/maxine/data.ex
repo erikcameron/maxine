@@ -1,11 +1,11 @@
 defmodule Maxine.Data do
-  @type sections :: :app | :options | :tmp
-  @type section :: %{}
+  alias Maxine.Machine
+
   @type t :: %__MODULE__{
-    app: section,
-    options: section,
-    tmp: section
+    app: %{},
+    tmp: %{},
+    options: Machine.event_options,
   }
 
-  defstruct app: %{}, options: %{}, tmp: %{}
+  defstruct app: %{}, tmp: %{}, options: []
 end
