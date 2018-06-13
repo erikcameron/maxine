@@ -3,11 +3,14 @@ defmodule Maxine.MixProject do
 
   def project do
     [
+      name: "Maxine",
       app: :maxine,
+      description: "State machines as data for Elixir",
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package()
     ]
   end
 
@@ -26,5 +29,13 @@ defmodule Maxine.MixProject do
       {:benchee, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
     ]
+  end
+  
+  defp package do 
+    %{
+      licences: ["MIT"],
+      maintainers: ["Erik Cameron"],
+      links: ["GitHub" => "https://github.com/erikcameron/maxine"]
+    }
   end
 end
