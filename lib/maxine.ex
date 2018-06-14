@@ -10,6 +10,7 @@ defmodule Maxine do
     CallbackError, 
     MachineError 
   }
+  alias Maxine.Signals.{Halt, Pass}
 
   @moduledoc """
   Functions for dealing with machines: to wit, `generate/2`, which
@@ -36,13 +37,6 @@ defmodule Maxine do
   #
   #   def function_name(arg1, arg2, ... argN) do
   #     ...
-
-  # Signal types that let us presume any atom is the 
-  # name of an event or state; we might normally use
-  # nil for that but in Elixir nil is an atom, and 
-  # these are explicit. See below for usage.
-  defmodule Halt, do: defstruct []
-  defmodule Pass, do: defstruct []
 
   ### Machine API: generate/2, advance/3, advance!/3
 

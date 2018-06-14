@@ -143,7 +143,9 @@ st = %State{
 
 Stay tuned, and in the meantime see the test suite for more.
 
+## Who's Maxine?
 
+It's "machine," with an interpolated "x" for "Elixir."
 
 
 ## Installation
