@@ -1,6 +1,7 @@
 defmodule MaxineTest do
   use ExUnit.Case
   doctest Maxine
+  doctest Maxine.Callbacks
 
   import Maxine
 
@@ -18,7 +19,6 @@ defmodule MaxineTest do
   }  
     
   alias Maxine.Examples.Package
-
    
   describe "generate/2" do
     setup do
@@ -96,6 +96,8 @@ defmodule MaxineTest do
     # IO plan to separate those assertions when (a) you have state.data
     # right there, (b) you need to test it anyway and (c) it should 
     # always be available, to every callback.
+    #
+    # Maybe in the future.
     test "fires all 9 callback points in correct order (and Callbacks.merge_data/3 works)", %{state: state} do
       {:ok, state2} = advance(state, :ship)
       assert state2.data.app[:order] == [8, 7, 6, 5, 4, 3, 2, 1, 0]

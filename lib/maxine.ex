@@ -12,7 +12,11 @@ defmodule Maxine do
   }
 
   @moduledoc """
-  Functions for dealing with machines.
+  Functions for dealing with machines: to wit, `generate/2`, which
+  creates an initial `%State{}` struct from a `%Machine{}`, and 
+  `advance/3` (along with companion `advance!/3`) which transforms
+  one `%State{}` into another one according to the rules given in 
+  the machine.
   """
 
   # Style note: Very long @spec directives are killing my
@@ -45,7 +49,23 @@ defmodule Maxine do
   @doc """
   Create a new state machine, optionally specifying a
   starting state other than the one given in the machine.
+
+  ## Parameters
+    - machine: An instance of `%Machine{}` that specifies events,
+      transitions, states, callbacks
+    - initial: An optional initial state, overriding the machine's default
+
+  ## Examples
+    
+    iex> alias Maxine.Examples.Package
+    iex> Maxine.generate(Package.machine).name
+    :origin
+
+    iex> alias Maxine.Examples.Package
+    iex> Maxine.generate(Package.machine, :foobar).name
+    :foobar
   """
+
   @spec generate(
     machine :: %Machine{}, 
     initial :: Machine.state_name
@@ -61,7 +81,28 @@ defmodule Maxine do
   end
 
   @doc """
-  Where the magic happens. Put in examples later
+  Creates a new state record based on the current state, an event,
+  and options (optionally). 
+
+  ## Parameters
+    - current: A `%State{}` record; the current state
+    - event: The name of the event you'd like to call (atom)
+    - options: optional arguments to the event; will be preserved
+      in state.data.options
+
+  ## Examples
+
+    iex> alias Maxine.Examples.Package
+    iex> state = Maxine.generate(Package.machine)
+    iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship)
+    iex> state.name
+    :in_transit
+
+    iex> alias Maxine.Examples.Package
+    iex> state = Maxine.generate(Package.machine)
+    iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship, foo: "bar")
+    iex> state.data.options[:foo]
+    "bar"
   """
   @spec advance(
     current :: %State{}, 
@@ -89,8 +130,23 @@ defmodule Maxine do
   end
 
   @doc """
-  Exception-raising wrapper (unwrapper?) for the above.
+  Exception-raising wrapper (unwrapper?) for the `advance/3`.
+
+  ## Parameters
+    - current: A `%State{}` record; the current state
+    - event: The name of the event you'd like to call (atom)
+    - options: optional arguments to the event; will be preserved
+
+  ## Examples
+  
+    iex> alias Maxine.Examples.Package
+    iex> state = Maxine.generate(Package.machine)
+    iex> state = Maxine.advance!(state, :ship)
+    iex> state.name
+    :in_transit 
+
   """
+
   @spec advance!(
     current :: %State{}, 
     event   :: Machine.event_name, 
@@ -101,50 +157,6 @@ defmodule Maxine do
     case advance(current, event, options) do
       {:ok, state = %State{}} -> state
       {:error, error}         -> raise error
-    end
-  end
-
-  ### Callback API: merge_data/3, request/2
-  defmodule Callbacks do
-    @moduledoc """
-    Helper functions for use in callbacks. These get their own module
-    because they really don't belong with generate/2 and advance/3.
-    The idea is that you
-    ```
-      import Maxine
-    ```
-    when you're controlling state machines, and you
-    ```
-      import Maxine.Callbacks
-    ```
-    when you're writing callback functions.
-    """
-
-    @doc """
-    Avoid annoying one-layer "deep merge" issues when sticking 
-    things in the %Data{} struct. Sections are (currently) `:app`,
-    `:options`, `:tmp`
-    """
-    @spec merge_data(%Data{}, Data.sections, map) :: %Data{}
-    def merge_data(%Data{} = data, section, new_data) do
-      case Map.get(data, section) do
-        sec when is_map(sec) -> Map.merge(data, %{section => Map.merge(sec, new_data)})
-        _ -> data
-      end
-    end
-
-    @doc """
-    Tag a %Data{} with an event to fire automatically next.
-    Public, for use in callbacks.
-    """
-    @spec request(
-      data    :: %Data{}, 
-      event   :: Machine.event_name, 
-      options :: Machine.event_options
-    ) :: %Data{}
-
-    def request(%Data{} = data, event, options \\ []) do
-      merge_data(data, :tmp, %{_maxine_next_event: event, _maxine_next_options: options})
     end
   end
 

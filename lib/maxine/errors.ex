@@ -31,8 +31,8 @@ defmodule Maxine.Errors do
 
   defmodule CallbackError do
     @moduledoc """
-    For failures in the callback phase. For callbacks 
-    themselves, we don't call this one directly. Use
+    For failures in the callback phase. For use by callbacks 
+    themselves; we don't call this one directly here. Use
     cause to wrap a more specific error.
     """
     defexception message: "callback failed", cause: nil
@@ -40,9 +40,8 @@ defmodule Maxine.Errors do
 
   defmodule MachineError do
     @moduledoc """
-    When applying the API to your machine yields unhandleable
-    results; back to the drawing board. (It's probably a type
-    error of one kind or another.)
+    Called when the underlying machine is faulty and causes
+    something unhandleable in the API.
     """
     defexception message: "callback failed", cause: nil
   end
