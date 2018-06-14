@@ -1,5 +1,5 @@
 defmodule Maxine.Callbacks do
-  alias Maxine.Data
+  alias Maxine.{Data, Machine}
 
   @moduledoc """
   Helper functions for use in callbacks. These get their own module
