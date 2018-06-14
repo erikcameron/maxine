@@ -67,14 +67,14 @@ defmodule Maxine do
     current :: %State{}, 
     event   :: Machine.event_name, 
     options :: Machine.event_options
-  ) :: { :ok, %State{} } | { :error, Maxine.Errors.error }
+  ) :: {:ok, %State{}} | {:error, Maxine.Errors.error}
 
   def advance(%State{} = current, event, options \\ []) do
     with state = %State{} <- resolve_next_state(current, event, options),
          state = %State{} <- run_callbacks(state, event)
     do
       case next_event(state) do
-        %Halt{} -> { :ok, state }
+        %Halt{} -> {:ok, state}
         next_event when is_atom(next_event) -> advance(state, next_event, next_options(state))
       end
     else
@@ -99,8 +99,8 @@ defmodule Maxine do
 
   def advance!(%State{} = current, event, options \\ []) do
     case advance(current, event, options) do
-      {:ok, state = %State{} } -> state
-      {:error, error }         -> raise error
+      {:ok, state = %State{}} -> state
+      {:error, error}         -> raise error
     end
   end
 
@@ -125,7 +125,7 @@ defmodule Maxine do
     things in the %Data{} struct. Sections are (currently) `:app`,
     `:options`, `:tmp`
     """
-    @spec merge_data(%Data{}, Data.sections, %{}) :: %Data{}
+    @spec merge_data(%Data{}, Data.sections, map) :: %Data{}
     def merge_data(%Data{} = data, section, new_data) do
       case Map.get(data, section) do
         sec when is_map(sec) -> Map.merge(data, %{section => Map.merge(sec, new_data)})
@@ -143,7 +143,7 @@ defmodule Maxine do
       options :: Machine.event_options
     ) :: %Data{}
 
-    def request(%Data{} = data, event, options \\ {}) do
+    def request(%Data{} = data, event, options \\ []) do
       merge_data(data, :tmp, %{_maxine_next_event: event, _maxine_next_options: options})
     end
   end
@@ -246,7 +246,7 @@ defmodule Maxine do
     from    :: Machine.state_name, 
     to      :: Machine.state_name, 
     event   :: Machine.event_name
-  ) :: [Machine.callback] 
+  ) :: [Machine.callback | %NoSuchCallbackError{}] 
 
   defp build_callbacks(machine, from, to, event) do
     # Using List.flatten means we can provide either a single
@@ -299,7 +299,7 @@ defmodule Maxine do
   end
   
   # Extract any options the callbacks left for the next event.
-  @spec next_event(%State{}) :: Machine.event_options | nil
+  @spec next_options(%State{}) :: Machine.event_options | nil
   defp next_options(%State{} = state) do
     state.data.tmp[:_maxine_next_options]
   end
