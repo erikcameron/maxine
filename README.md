@@ -1,5 +1,7 @@
 # Maxine
 
+[![Build Status](https://travis-ci.com/erikcameron/maxine.svg?branch=master)](https://travis-ci.com/erikcameron/maxine)
+
 State machines as data, for Elixir.
 ## About
 
