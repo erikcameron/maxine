@@ -1,4 +1,8 @@
 defmodule Maxine.Errors do
+  @moduledoc """
+  The various types of failure we may encounter.
+  """
+
   defmodule NoSuchEventError do
     @moduledoc """
     On a non-existent event.
