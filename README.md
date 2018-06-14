@@ -9,9 +9,10 @@ it eschews `gen_fsm`'s abstraction of a separate process in favor of a simple
 data structure and some functions on it. That said, I had two concerns, 
 which turned out to be related:
 1. I'd have to roll my own solution for callbacks, which, ok, but:
-2. Fsm is largely implemented in macros, so as to provide a friendly DSL
-for specifying machines inside of module definitons. The code is frankly
-difficult to understand, or at least more difficult (and more metaprogramming)
+2. Fsm is largely implemented in macros, so as to provide a friendly
+DSL for specifying machines inside of module definitons. Which is
+great if that's what you need, but the code is frankly difficult
+to understand, or at least more difficult (and more metaprogramming)
 than the simplicity of the task seems to warrant. Furthermore, the
 resulting representation of the machines _themselves_ consists of
 idiosyncratic DSL code which gets confusing after a while.
@@ -31,25 +32,31 @@ That last clause is important: Presumably many/most state machine
 libraries in many/most languages have a data type for a collection
 of transitions, events and states, and/or implement it with a simple
 associative structure like a map. The thing here is that instead
-of hiding that structure as an implementation detail, we make _it_
-the contract, instead of a DSL, API, etc.
+of treating that structure as an implementation detail, and hiding it
+behind an API, we expose it, and make _it_ the interface. Benefits include:
+- Easier to read and reason about than machines specified in an idiosyncratic DSL, at least for my brain
+- Machines can be specified any way you like, at compile- or runtime
+- Really easy to serialize and send over the network to databases, 
+other languages/platforms, etc.
 
-The line is thin anyway. This train of thought began a few years
-ago working on a few Rails applications writing (a) machines with
-the [state_machine](https://github.com/state-machines/state_machines)
+This train of thought began a few years ago working on a few Rails
+applications writing (a) machines with the
+[state_machine](https://github.com/state-machines/state_machines)
 DSL, and (b) Elasticsearch queries with whatever I wanted, because
-they're JSON. (The ES "Query DSL" really just lays out the legal
-formats; as they say in the documentation, ["think of the Query DSL
-as an AST (Abstract Syntax Tree) of
+they're plain old JSON objects. (The ES "Query DSL" really just
+lays out the legal shapes for those objects; as they say in the
+documentation, ["think of the Query DSL as an AST (Abstract Syntax
+Tree) of
 queries"](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html).
+So maybe think of Maxine as an AST of state machines.)
 
-
-The Ruby DSL had decent surface clarity, but as the machines became
-more complicated it seemed like I systematically understood the
-queries better than I understood the state transitions. Building
-basic data structures was certainly easier than dealing with a
-class-level DSL; the data was easier to understand than the code.
-Hence "state machines as data."
+Maybe more importantly: The Ruby DSL had decent surface clarity,
+but as the machines became more complicated it seemed like I
+systematically understood the ES queries better than I understood
+the state transitions written in the DSL. Building basic data
+structures was certainly easier than dealing with a class-level
+DSL; in this case, data was easier to understand than code.  Hence
+"state machines as data."
 
 ## Basics
 
