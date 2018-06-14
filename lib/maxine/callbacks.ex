@@ -26,9 +26,9 @@ defmodule Maxine.Callbacks do
 
   ## Examples
   
-    iex> new_data = Maxine.Callbacks.merge_data(%Maxine.Data{}, :app, %{hello: "world"})
-    iex> new_data.app[:hello]
-    "world"
+      iex> new_data = Maxine.Callbacks.merge_data(%Maxine.Data{}, :app, %{hello: "world"})
+      iex> new_data.app[:hello]
+      "world"
 
   """
   @spec merge_data(%Data{}, Data.sections, map) :: %Data{}
@@ -57,13 +57,13 @@ defmodule Maxine.Callbacks do
 
   ## Examples
   
-    iex> new_data = Maxine.Callbacks.request(%Maxine.Data{}, :ship, foo: "bar")
-    iex> new_data.tmp[:_maxine_next_event]
-    :ship
+      iex> new_data = Maxine.Callbacks.request(%Maxine.Data{}, :ship, foo: "bar")
+      iex> new_data.tmp[:_maxine_next_event]
+      :ship
 
-    iex> new_data = Maxine.Callbacks.request(%Maxine.Data{}, :ship, foo: "bar")
-    iex> new_data.tmp[:_maxine_next_options][:foo]
-    "bar"
+      iex> new_data = Maxine.Callbacks.request(%Maxine.Data{}, :ship, foo: "bar")
+      iex> new_data.tmp[:_maxine_next_options][:foo]
+      "bar"
 
   """
   @spec request(

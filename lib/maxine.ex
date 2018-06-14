@@ -57,13 +57,13 @@ defmodule Maxine do
 
   ## Examples
     
-    iex> alias Maxine.Examples.Package
-    iex> Maxine.generate(Package.machine).name
-    :origin
+      iex> alias Maxine.Examples.Package
+      iex> Maxine.generate(Package.machine).name
+      :origin
 
-    iex> alias Maxine.Examples.Package
-    iex> Maxine.generate(Package.machine, :foobar).name
-    :foobar
+      iex> alias Maxine.Examples.Package
+      iex> Maxine.generate(Package.machine, :foobar).name
+      :foobar
   """
 
   @spec generate(
@@ -92,17 +92,17 @@ defmodule Maxine do
 
   ## Examples
 
-    iex> alias Maxine.Examples.Package
-    iex> state = Maxine.generate(Package.machine)
-    iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship)
-    iex> state.name
-    :in_transit
+      iex> alias Maxine.Examples.Package
+      iex> state = Maxine.generate(Package.machine)
+      iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship)
+      iex> state.name
+      :in_transit
 
-    iex> alias Maxine.Examples.Package
-    iex> state = Maxine.generate(Package.machine)
-    iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship, foo: "bar")
-    iex> state.data.options[:foo]
-    "bar"
+      iex> alias Maxine.Examples.Package
+      iex> state = Maxine.generate(Package.machine)
+      iex> {:ok, state = %Maxine.State{}} = Maxine.advance(state, :ship, foo: "bar")
+      iex> state.data.options[:foo]
+      "bar"
   """
   @spec advance(
     current :: %State{}, 
@@ -138,12 +138,12 @@ defmodule Maxine do
     - options: optional arguments to the event; will be preserved
 
   ## Examples
-  
-    iex> alias Maxine.Examples.Package
-    iex> state = Maxine.generate(Package.machine)
-    iex> state = Maxine.advance!(state, :ship)
-    iex> state.name
-    :in_transit 
+    
+      iex> alias Maxine.Examples.Package
+      iex> state = Maxine.generate(Package.machine)
+      iex> state = Maxine.advance!(state, :ship)
+      iex> state.name
+      :in_transit 
 
   """
 
