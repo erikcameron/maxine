@@ -1,5 +1,4 @@
-# Maxine
-
+# Maxine 
 [![Build Status](https://travis-ci.com/erikcameron/maxine.svg?branch=master)](https://travis-ci.com/erikcameron/maxine)
 
 State machines as data, for Elixir. 
@@ -96,9 +95,9 @@ defmodule MyMachine do
         *: :log_event
       }
       index: %{
-        start_billing: fn(state, event, data) -> meter_on(data) end,
-        stop_billing: fn(s, e, d) -> meter_off(data) end,
-        log_event: fn(s, e, d) -> log("#{event} happened") end
+        start_billing: fn(from, to, event, data) -> meter_on(data) end,
+        stop_billing: fn(from, to, event, data) -> meter_off(data) end,
+        log_event: fn(from, to, event, data) -> log("#{event} happened") end
       }
     }
   }
@@ -144,8 +143,6 @@ st = %State{
 }
 ```
 
-Stay tuned, and in the meantime see the test suite for more.
-
 ## Moving parts
 
 Machines are described in the following terms:
@@ -162,7 +159,8 @@ itself a map that keys one state (or a group, or `*` to match any state) `A` to 
 `B`, and denotes this event will transform a state `A` into a state
 `B`.
 - <strong>Callbacks:</strong> Callbacks are functions that the machine
-runs on a given transition. They may be specified in the following ways,
+runs on a given transition and that filter a `%Data{}` object in some way.
+They may be specified in the following ways,
 in the order in which they will be run:
     * On entering a given state (or a group, or `*`)
     * On leaving a given state (or a group, or `*`)
@@ -186,20 +184,68 @@ they can't be used to denote events for the same reason.
 
 ## The transition process
 
-When an event `E` is called for a state `S`, the following steps are performed
+When an event is called on a given state, the following steps are performed
 by `advance/3` and friends:
 - The machine to consult is provided by the state itself (as `state.machine`)
-- If the event is not also a key in the machine's transitions table,
+- If the event name is not also a key in the machine's transitions table,
 a `NoSuchEventError` is returned; otherwise we consult the specific
 table for that event.
-- We look for the following keys in the 
+- In that table, we then look for an entry for the current state; if one exists,
+it will denote the state to transition to. If not, we then look for entries
+under each group name (if any) specified for this state, in the order
+given in the machine, and finally under `*`. If none of these yield a 
+next state, we return `UnavilableEventError`. 
+- If we find a state name to transition to, we build a new `%State{}` record 
+with:
+    * the same `%Machine{}` as the current state
+    * `name` set to the name of the new state
+    * `previous` set to the name of the current state
+    * A new `data` that inherits `data.app` from the current state,
+    but gets a fresh `data.tmp` and `data.options` set to whatever options
+    the event was called with (or an empty keyword list)
+- Once the new state record is built, we create a list of callbacks to
+run, in the order given above. (Group names are again triggered
+in the order they are specified in the machine.) If we look at
+`state.machine.callbacks` we'll see a map with four keys, `:entering`,
+`:leaving`, `:events` and `:index`. Each of the first three in turn contains a map
+where the keys are state names (`:entering`, `:leaving`) or event names
+(`:events`), group names, or `*`; the values are names, written as
+atoms, of callbacks. These names are the keys of the map under `index`, 
+and the values of that map are actual functions. We use this extra layer 
+of indirection for two reasons:
+    * When using anonymous function literals, (rather than, e.g.,
+    `&some_named_function/3`) you can associate them with multiple callback points
+    and only specify them once; and
+    * This makes the machines themselves (more) portable across platforms, languages,
+    etc. The machine can be shared as, say, a plain JSON object with the callback
+    index stripped; the host platform needs only to implement the named callbacks
+    locally and the machine can then be shared freely.
+A list of callback names is built, and then mapped over the index to create
+a list of actual functions to call. If a missing callback is encountered
+the result will be a `NoSuchCallbackError`. 
+- The callbacks are called, each being given the name of the state
+being exited, the state being entered, the event name, and a `%Data{}`
+record, and being expected to return a new `%Data{}` object.
+Callbacks do not have access to the state record! They rather
+filter/intercept/"change" the `%Data{}` record, which is then passed
+down the callback chain. (They cannot make illegal state changes,
+and `data` aside, can't change any of the arguments provided to
+other callbacks in this cycle. Note that event options are passed
+in as `data.options`, so they _can_ filter those.) Callbacks may return `CallbackError`
+instead to halt the event chain and return to the caller.
+- If the callback chain terminates successfully, the resulting
+`data` is merged back into state. At this point we check (in
+`data.tmp`; see `Maxine.Callbacks.request/3`) if any callbacks have
+requested that we automatically fire another event:
+    * If not, `advance/3` returns `{:ok, state}` to the caller
+    * If so, `advance/3` is called recursively with the new event name and options, and we start
+    the process again. 
 
-## Machine spec
+See the examples for concrete illustration.
 
 ## Who's Maxine?
 
 It's "machine," with an interpolated "x" for "Elixir."
-
 
 ## Installation
 

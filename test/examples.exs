@@ -5,15 +5,24 @@ defmodule Maxine.Examples do
     alias Maxine.{Machine, Data}
     alias Maxine.Errors.CallbackError
   
-    def no_longer_in_transit(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [0]})  
-    def left_shipping(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [1 | data.app[:order]]})  
-    def all_leaving(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [2 | data.app[:order]]})  
-    def now_delivered(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [3 | data.app[:order]]})  
-    def entered_shipping(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [4 | data.app[:order]]})  
-    def all_entering(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [5 | data.app[:order]]})  
-    def on_ship(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [6 | data.app[:order]]})  
-    def moved_around(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [7 | data.app[:order]]})  
-    def all_events(_, _, _, %Data{} = data), do: merge_data(data, :app, %{order: [8 | data.app[:order]]})  
+    def no_longer_in_transit(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [0]})  
+    def left_shipping(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [1 | data.app[:order]]})  
+    def all_leaving(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [2 | data.app[:order]]})  
+    def now_delivered(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [3 | data.app[:order]]})  
+    def entered_shipping(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [4 | data.app[:order]]})  
+    def all_entering(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [5 | data.app[:order]]})  
+    def on_ship(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [6 | data.app[:order]]})  
+    def moved_around(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [7 | data.app[:order]]})  
+    def all_events(_, _, _, %Data{} = data), 
+      do: merge_data(data, :app, %{order: [8 | data.app[:order]]})  
 
     @spec log(Machine.state_name, Machine.state_name, Machine.event_name, %Data{}) :: %Data{}
     def log(from, to, event, %Data{} = data) do
