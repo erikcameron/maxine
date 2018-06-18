@@ -12,7 +12,7 @@ data structure and some functions on it. That said, I had two concerns:
 2. Fsm is largely implemented in macros, so as to provide a friendly
 DSL for specifying machines inside of module definitons. Which is
 great if that's what you need, but the code is frankly difficult
-to understand, or at least more difficult (and more metaprogramming)
+to understand, or at least more difficult ([and more metaprogramming](https://github.com/christopheradams/elixir_style_guide#metaprogramming))
 than the simplicity of the task seems to warrant. Furthermore, the
 resulting representation of the machines _themselves_ consists of
 idiosyncratic DSL code which gets confusing after a while.
