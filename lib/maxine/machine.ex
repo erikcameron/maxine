@@ -16,15 +16,15 @@ defmodule Maxine.Machine do
 
   @type transition_map :: %{required(event_name) => %{required(state_name) => state_name}}
   @type callback_map :: %{entering: cb_listing, leaving: cb_listing, events: cb_listing, index: cb_index}
-  @type alias_map :: %{required(name) => [name]}
+  @type groups_map :: %{required(name) => [name]}
 
   @type t :: %__MODULE__{
     initial: state_name,
     transitions: transition_map,
     callbacks: callback_map,
-    aliases: alias_map
+    groups: groups_map
   }
 
-  @enforce_keys [:initial, :transitions, :callbacks, :aliases]
-  defstruct [:initial, :transitions, :callbacks, :aliases]
+  @enforce_keys [:initial, :transitions, :callbacks, :groups]
+  defstruct [:initial, :transitions, :callbacks, :groups]
 end

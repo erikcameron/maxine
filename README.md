@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/erikcameron/maxine.svg?branch=master)](https://travis-ci.com/erikcameron/maxine)
 
-State machines as data, for Elixir.
+State machines as data, for Elixir. 
 ## About
 
 After shopping for a simple Elixir state machine package, I liked 
@@ -19,16 +19,18 @@ than the simplicity of the task seems to warrant. Furthermore, the
 resulting representation of the machines _themselves_ consists of
 idiosyncratic DSL code which gets confusing after a while.
 
-Maxine specifies a data type for state machines instead: They are maps of
-a certain shape (a `%Maxine.Machine{}`) that lay out rules for how other
-maps of a certain shape (`%Maxine.State`) may be transformed. Note that the
-nice clean `%{data: nil, state: foo}` that Fsm functions return only serve the 
-purpose of the latter. Fsm's actual representation of events, states and 
-transitions is obscured by the layer of metaprogramming. In the documentation
-on ["Dynamic definitions"](https://github.com/sasa1977/fsm#dynamic-definitions),
-the example defines states and transitions via a simple keyword list, but only
-the better to feed them to the macros. Maxine makes the simple representation
-the canonical one, and exposes it.
+Maxine aims to be readable by design. It specifies a data type for
+state machines instead: They are maps of a certain shape (a
+`%Maxine.Machine{}`) that lay out rules for how other maps of a
+certain shape (`%Maxine.State`) may be transformed. Note that the
+nice clean `%{data: nil, state: foo}` that Fsm functions return
+only serve the purpose of the latter. Fsm's actual representation
+of events, states and transitions is obscured by the layer of
+metaprogramming. In the documentation on ["Dynamic
+definitions"](https://github.com/sasa1977/fsm#dynamic-definitions), the
+example defines states and transitions via a simple keyword list,
+but only the better to feed them to the macros. Maxine makes the
+simple representation the canonical one, and exposes it.
 
 That last clause is important: Presumably many/most state machine
 libraries in many/most languages have a data type for a collection
@@ -79,7 +81,7 @@ defmodule MyMachine do
         on: :inoperative
       },
     },
-    aliases: %{
+    groups: %{
       off: :not_on,
       inoperative: [:not_on, :totally_fubar]
     },
@@ -110,14 +112,13 @@ The public API gives three functions, `generate/2`, `advance/3` and
 `advance!/3`. Use as follows:
 
 ```elixir
-state = generate(MyMachine)
-state.name == :off   # <=== true
-
 # the second param to generate is an optional initial
 # state; e.g., we could:
 #   state = generate(MyMachine, :on)
 # It's not going to make sure the state exists, so 
 # be careful. :)
+state = generate(MyMachine)
+state.name == :off   # <=== true
 
 {:ok, %State{} = state2} = advance(state, :power, options_are: "optional")
 # or
@@ -137,13 +138,63 @@ st = %State{
   machine: %Machine{...}
   data: %{
     app: %{},     # a spot for callbacks to put/get data
-    tmp: %{},     # like above, but wiped every event
-    options: []   # the keyword list of arguments passed to this event
+    tmp: %{},     # like above, but wiped on every event
+    options: []   # the keyword list of arguments passed to the most recent event
   }
 }
 ```
 
 Stay tuned, and in the meantime see the test suite for more.
+
+## Moving parts
+
+Machines are described in the following terms:
+
+- <strong>States:</strong> States are identified by names, written
+as atoms. The initial state is given by the machine (or by the
+optional argument to `generate/2`, mainly for testing.)
+- <strong>Events:</strong> Events are also identified by names,
+written as atoms. These are provided as arguments to `advance/3`
+and `advance!/3`, and form the keys in the machine's transition
+tables.
+- <strong>Transitions:</strong> The value of each event key is
+itself a map that keys one state (or a group, or `*` to match any state) `A` to another
+`B`, and denotes this event will transform a state `A` into a state
+`B`.
+- <strong>Callbacks:</strong> Callbacks are functions that the machine
+runs on a given transition. They may be specified in the following ways,
+in the order in which they will be run:
+    * On entering a given state (or a group, or `*`)
+    * On leaving a given state (or a group, or `*`)
+    * On firing a given event (or a group, or `*`)
+Maxine has no concept of "before" or "after" a state change has
+occurred, though you can implement your own such system using the
+hooks above.
+- <strong>Groups:</strong> States and events may also belong to groups;
+the keys in the group table are names of (concrete, "real") states and 
+events, and the values are one or more group names for that concrete
+state. In the example above, `:not_on` is a group name for `:off` and
+`:inoperative`. Group names are used in two places: 
+    * As the "from" or "current" state in a transition mapping; i.e., 
+    "this event moves from any state in group G to some concrete state S"
+    * As aliases for states and events in the callback table; i.e., 
+    "when entering/leaving any state in group G, or firing any event in
+    group G, run this callback"
+Note that groups can't be used to denote a "to" state, because denoting
+only the group doesn't tell Maxine what concrete state you actually want;
+they can't be used to denote events for the same reason. 
+
+## The transition process
+
+When an event `E` is called for a state `S`, the following steps are performed
+by `advance/3` and friends:
+- The machine to consult is provided by the state itself (as `state.machine`)
+- If the event is not also a key in the machine's transitions table,
+a `NoSuchEventError` is returned; otherwise we consult the specific
+table for that event.
+- We look for the following keys in the 
+
+## Machine spec
 
 ## Who's Maxine?
 
@@ -158,7 +209,7 @@ by adding `maxine` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:maxine, "~> 0.1.0"}
+    {:maxine, "~> 0.1.1"}
   ]
 end
 ```

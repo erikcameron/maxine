@@ -72,7 +72,7 @@ defmodule Maxine.Examples do
           robot_delivery: :delivered
         }
       },
-      aliases: %{
+      groups: %{
         in_transit: :shipped,
         delivered: [:shipped],
         ship: :move_around,

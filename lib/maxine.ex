@@ -166,8 +166,8 @@ defmodule Maxine do
 
   defp resolve_next_state(current, event, options) do
     with  %Pass{} <- next_state_for(current.name, current, event, options),
-          # The "|| %Pass{}" at the end is for cases where the alias list is empty
-          %Pass{} <- Enum.find_value(aliases_for(current.name, current.machine), 
+          # The "|| %Pass{}" at the end is for cases where the group list is empty
+          %Pass{} <- Enum.find_value(groups_for(current.name, current.machine), 
                             fn(x) -> next_state_for(x, current, event, options) end) || %Pass{},
           %Pass{} <- next_state_for(:*, current, event, options)
     do
@@ -182,7 +182,7 @@ defmodule Maxine do
   # Generate the next machine state struct, or nil. Note that
   # we're explicitly passing the name in as the first argument,
   # rather than deriving it from the current state---this is 
-  # b/c the state name may be an alias or :*
+  # b/c the state name may be an group name or :*
   @spec next_state_for(
     this_state_name :: Machine.state_name, 
     current         :: %State{}, 
@@ -315,12 +315,12 @@ defmodule Maxine do
   # decreasing priority
   @spec all_names_for(Machine.name, %Machine{}) :: [Machine.name]
   defp all_names_for(name, machine) do
-    List.flatten([name, aliases_for(name, machine), :*])
+    List.flatten([name, groups_for(name, machine), :*])
   end
 
-  # aliases for the name of an event or state
-  @spec aliases_for(Machine.name, %Machine{}) :: [Machine.name]
-  defp aliases_for(name, machine) do
-    Map.get(machine.aliases, name, []) |> List.wrap
+  # groups for for the name of an event or state
+  @spec groups_for(Machine.name, %Machine{}) :: [Machine.name]
+  defp groups_for(name, machine) do
+    Map.get(machine.groups, name, []) |> List.wrap
   end
 end

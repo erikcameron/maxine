@@ -67,7 +67,7 @@ defmodule MaxineTest do
       assert state3.name == :delivered
     end
 
-    test "advances on aliased mapping (i.e., event matches a state alias", %{state: state} do
+    test "advances on group name for current state", %{state: state} do
       {:ok, returned_state} = advance(state, :return)
       assert returned_state.name == :origin
     end
@@ -88,7 +88,7 @@ defmodule MaxineTest do
     # note that this test confirms a whole number of things:
     # - callbacks are fired
     # - callbacks are fired in the correct order
-    # - state and event aliases, and globs for each, are fired correctly 
+    # - state and event groups, and globs for each, are fired correctly 
     # - callbacks can write to data
     # - callbacks can write to data via Callbacks.merge_data/3
     # The last point particularly seems worthy of its own test,
@@ -151,7 +151,7 @@ defmodule MaxineTest do
         initial: [],
         transitions: "foo",
         callbacks: "bar",
-        aliases: nil
+        groups: nil
       }
       doomed_state = generate(doomed_machine)
       assert {:error, %MachineError{}} = advance(doomed_state, :big_event)
