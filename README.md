@@ -178,6 +178,7 @@ state. In the example above, `:not_on` is a group name for `:off` and
     * As aliases for states and events in the callback table; i.e., 
     "when entering/leaving any state in group G, or firing any event in
     group G, run this callback"
+
 Note that groups can't be used to denote a "to" state, because denoting
 only the group doesn't tell Maxine what concrete state you actually want;
 they can't be used to denote events for the same reason. 
