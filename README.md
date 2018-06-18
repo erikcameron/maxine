@@ -41,10 +41,10 @@ behind an API, we expose it, and make _it_ the interface. Benefits include:
 - Really easy to serialize and send over the network to databases, 
 other languages/platforms, etc.
 
-This train of thought began a few years ago working on a few Rails
-applications writing (a) machines with the
+This train of thought began a few years ago working on a Rails
+application that involved writing (a) machines with the
 [state_machine](https://github.com/state-machines/state_machines)
-DSL, and (b) Elasticsearch queries with whatever I wanted, because
+DSL, and (b) [Elasticsearch](https://elastic.co) queries with whatever I wanted, because
 they're plain old JSON objects. (The ES "Query DSL" really just
 lays out the legal shapes for those objects; as they say in the
 documentation, ["think of the Query DSL as an AST (Abstract Syntax
