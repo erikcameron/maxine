@@ -7,8 +7,7 @@ State machines as data, for Elixir.
 After shopping for a simple Elixir state machine package, I liked 
 the approach of [Fsm](https://github.com/sasa1977/fsm), in that
 it eschews `gen_fsm`'s abstraction of a separate process in favor of a simple
-data structure and some functions on it. That said, I had two concerns, 
-which turned out to be related:
+data structure and some functions on it. That said, I had two concerns: 
 1. I'd have to roll my own solution for callbacks, which, ok, but:
 2. Fsm is largely implemented in macros, so as to provide a friendly
 DSL for specifying machines inside of module definitons. Which is
