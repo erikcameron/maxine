@@ -7,8 +7,8 @@ defmodule Maxine do
     UnavailableEventError, 
     NoSuchCallbackError,
     CallbackReturnError, 
-    CallbackError, 
-    MachineError 
+    CallbackError,
+    MachineError
   }
   alias Maxine.Signals.{Halt, Pass}
 
@@ -119,8 +119,11 @@ defmodule Maxine do
       err = %CallbackReturnError{}    -> {:error, err} 
       err = %CallbackError{}          -> {:error, err}
     end
-  rescue
-    error -> {:error, %MachineError{message: "advance/3 failed, see cause", cause: error}} 
+  # Come back to this:
+  # rescue
+  #   err -> 
+  #     trace = System.stacktrace
+  #     reraise MachineError, trace
   end
 
   @doc """

@@ -238,14 +238,15 @@ instead to halt the event chain and return to the caller.
 `data.tmp`; see `Maxine.Callbacks.request/3`) if any callbacks have
 requested that we automatically fire another event:
     * If not, `advance/3` returns `{:ok, state}` to the caller
-    * If so, `advance/3` is called recursively with the new event name and options, and we start
-    the process again. 
+    * If so, `advance/3` is called tail-recursively with the new event name and options, and we start
+    the process again.
 
 See the examples for concrete illustration.
 
 ## Who's Maxine?
 
-It's "machine," with an interpolated "x" for "Elixir."
+It's "machine," with an interpolated "x" for "Elixir." (Though if you have
+a [favorite Maxine](https://en.wikipedia.org/wiki/Maxine_Waters) that's ok too)
 
 ## Installation
 

@@ -1,0 +1,6 @@
+- helper functions:
+  - ...
+  - pause/restore callbacks
+
+- make data the first arg to callbacks, rather than last
+

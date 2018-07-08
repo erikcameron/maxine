@@ -1,6 +1,11 @@
 defmodule Maxine.Examples do
+  ### Package: The postal experience
 
   defmodule PackageCB do
+    @moduledoc """
+    Callback functions for the Package state machine.
+    """
+
     import Maxine.Callbacks
     alias Maxine.{Machine, Data}
     alias Maxine.Errors.CallbackError
@@ -48,6 +53,10 @@ defmodule Maxine.Examples do
   end 
 
   defmodule Package do
+    @moduledoc """
+    The Package state machine itself.
+    """ 
+
     alias Maxine.Machine
     import PackageCB
 
@@ -60,9 +69,9 @@ defmodule Maxine.Examples do
         ship: %{ 
           origin: :in_transit, 
           in_transit: :delivered 
-        },
-        inspect: %{
-          *: :under_inspection
+        }, 
+        inspect: %{ 
+          *: :under_inspection 
         },
         return: %{
           shipped: :origin
@@ -122,6 +131,61 @@ defmodule Maxine.Examples do
           misguided_return_value: &misguided_return/4,
           delivery_robot: &delivery_robot/4, 
           log: &log/4
+        }
+      }
+    }
+
+    @spec machine() :: %Machine{}
+    def machine(), do: @machine
+  end
+
+  ### Counter: demonstrate recursion (and TCO) with request/3
+
+  defmodule CounterCB do
+    import Maxine.Callbacks
+    alias Maxine.Data
+
+    def counter(_, _, _, %Data{} = data) do
+      max    = data.options[:max] || 100
+      iter   = data.app[:counter] || 1
+      data 
+      |> merge_data(:app, %{counter: iter + 1})
+      |> run_or_stop(max)
+    end
+
+    defp run_or_stop(%Data{} = data, max) do
+      if data.app[:counter] == max do
+        data
+      else
+        request(data, :run, data.options)
+      end
+    end
+  end
+
+  defmodule Counter do
+    import CounterCB
+    alias Maxine.Machine
+
+    @machine %Machine{
+      initial: :stopped,
+      transitions: %{
+        run: %{
+          stopped: :running,
+          running: :running,
+        },
+        stop: %{
+          running: :stopped
+        }
+      },
+      groups: %{},
+      callbacks: %{
+        entering: %{},
+        leaving: %{},
+        events: %{
+          run: :counter
+        },
+        index: %{
+          counter: &counter/4
         }
       }
     }

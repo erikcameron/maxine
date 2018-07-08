@@ -146,15 +146,16 @@ defmodule MaxineTest do
       assert state.data.options[:robot] == "yes"
     end
 
-    test "errors from invalid machines are caught and reraised as MachineError" do
-      doomed_machine = %Machine{
-        initial: [],
-        transitions: "foo",
-        callbacks: "bar",
-        groups: nil
-      }
-      doomed_state = generate(doomed_machine)
-      assert {:error, %MachineError{}} = advance(doomed_state, :big_event)
-    end
+#    Not actually sure this is how we want to handle it...
+#    test "errors from invalid machines are caught and reraised as MachineError" do
+#      doomed_machine = %Machine{
+#        initial: [],
+#        transitions: "foo",
+#        callbacks: "bar",
+#        groups: nil
+#      }
+#      doomed_state = generate(doomed_machine)
+#      assert {:error, %MachineError{}} = advance(doomed_state, :big_event)
+#    end
   end 
 end
