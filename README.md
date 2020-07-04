@@ -243,6 +243,17 @@ requested that we automatically fire another event:
 
 See the examples for concrete illustration.
 
+
+## To do
+
+Ecto (Oban?) integration:
+
+- `cast_advance(...)` for changeset integration
+- query helpers
+- that may be sufficient to use for Oban job state tracking?
+
+
+
 ## Who's Maxine?
 
 It's "machine," with an interpolated "x" for "Elixir." (Though if you have
