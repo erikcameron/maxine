@@ -24,6 +24,7 @@ defmodule Maxine.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ecto, ">= 3.0.0", optional: true},
       {:benchee, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev}
