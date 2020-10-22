@@ -8,7 +8,7 @@ defmodule Maxine do
     NoSuchCallbackError,
     CallbackReturnError, 
     CallbackError,
-    MachineError
+#    MachineError
   }
   alias Maxine.Signals.{Halt, Pass}
 
