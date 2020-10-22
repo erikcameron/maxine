@@ -1,7 +1,8 @@
 # Maxine 
 [![Build Status](https://travis-ci.com/erikcameron/maxine.svg?branch=master)](https://travis-ci.com/erikcameron/maxine)
 
-State machines as data, for Elixir. 
+State machines as data, for Elixir. Includes lightweight Ecto integration.
+
 ## About
 
 After shopping for a simple Elixir state machine package, I liked 
@@ -243,15 +244,24 @@ requested that we automatically fire another event:
 
 See the examples for concrete illustration.
 
+## Ecto integration
+
+Use `Maxine.Ecto.cast_state/4` to integrate with Ecto changesets thus:
+
+```
+some_record
+|> cast_state(event, my_machine)
+```
+
+You can specify a field with the `field` option; default is `state`.
+Will call `advance/3` on the basis of the record's current state 
+and the given event, setting the value on the field or setting an
+error on the changeset if the transition is invalid.
+
 
 ## To do
 
-Ecto (Oban?) integration:
-
-- `cast_advance(...)` for changeset integration
-- query helpers
-- that may be sufficient to use for Oban job state tracking?
-
+- Fix Travis CI integration or move to something else
 
 
 ## Who's Maxine?
@@ -267,7 +277,7 @@ by adding `maxine` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:maxine, "~> 0.1.1"}
+    {:maxine, "~> 0.2"}
   ]
 end
 ```
