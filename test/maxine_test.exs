@@ -5,17 +5,15 @@ defmodule MaxineTest do
 
   import Maxine
 
-  alias Maxine.{
-    Machine, 
-    State
-  }
+  alias Maxine.State
+
   alias Maxine.Errors.{
     NoSuchEventError,
     UnavailableEventError,
     NoSuchCallbackError,
     CallbackReturnError,
     CallbackError,
-    MachineError
+#    MachineError
   }  
     
   alias Maxine.Examples.Package
