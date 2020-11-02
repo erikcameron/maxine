@@ -37,7 +37,7 @@ defmodule Maxine.Ecto do
 
   def cast_state(changeset, event, machine, options \\ []) do
     field = Keyword.get(options, :field, :state)
-    state = Map.get(changeset.data, field) |> state_to_atom
+    state = Map.get(changeset.data, field, machine.initial) |> state_to_atom
 
     with %State{} = current <- generate(machine, state),
       {:ok, next} <- advance(current, event, options)
@@ -50,5 +50,6 @@ defmodule Maxine.Ecto do
   end
 
   defp state_to_atom(nil), do: raise ArgumentError, "missing state"
+  defp state_to_atom(state) when is_atom(state), do: state
   defp state_to_atom(state) when is_binary(state), do: String.to_atom(state)
 end
