@@ -24,3 +24,5 @@ maxine-*.tar
 
 # vi(m) swap files
 *.swp
+
+.tool-versions
