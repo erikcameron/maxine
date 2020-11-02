@@ -25,6 +25,6 @@ defmodule Maxine.Machine do
     groups: groups_map
   }
 
-  @enforce_keys [:initial, :transitions, :callbacks, :groups]
+  @enforce_keys [:initial, :transitions]
   defstruct [:initial, :transitions, :callbacks, :groups]
 end

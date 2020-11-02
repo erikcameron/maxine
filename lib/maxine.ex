@@ -257,7 +257,7 @@ defmodule Maxine do
     event   :: Machine.event_name
   ) :: [Machine.callback | %NoSuchCallbackError{}] 
 
-  defp build_callbacks(machine, from, to, event) do
+  defp build_callbacks(%{callbacks: cb} = machine, from, to, event) when is_map(cb) do
     # Using List.flatten means we can provide either a single
     # callback function per key, or lists thereof; using an empty
     # list as the default element means we don't need to `compact`
@@ -269,6 +269,7 @@ defmodule Maxine do
     |> List.flatten
     |> Enum.map(fn(cb) -> machine.callbacks.index[cb] || %NoSuchCallbackError{message: cb} end)
   end
+  defp build_callbacks(_, _, _, _), do: []
 
   # Given a list of callbacks, run them recursively, allowing each to inject a
   # new data record into the process (but nothing else). Callbacks (see `Machine.callback`)
@@ -324,6 +325,7 @@ defmodule Maxine do
   # groups for for the name of an event or state
   @spec groups_for(Machine.name, %Machine{}) :: [Machine.name]
   defp groups_for(name, machine) do
+    groups = machine.groups || %{}
     Map.get(machine.groups, name, []) |> List.wrap
   end
 end

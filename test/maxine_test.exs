@@ -38,17 +38,38 @@ defmodule MaxineTest do
     test "assigns initial state from argument" do
       assert generate(Package.machine, :foo).name == :foo
     end
-  end
 
+    test "generates state when optional callbacks/groups not given" do  
+      params = Package.machine 
+        |> Map.from_struct
+        |> Map.drop([:callbacks, :groups])
+
+      assert %State{} = Maxine.Machine |> struct(params) |> generate
+    end
+  end
 
   describe "advance/3" do 
     setup do
-      {:ok, state} = advance(generate(Package.machine), :ship)
+      {:ok, state} = Package.machine
+        |> generate
+        |> advance(:ship) 
+
       %{state: state}
     end
 
     test "returns a state", %{state: state} do
       assert %State{} = state
+    end
+
+    test "returns a state when optional callbacks/groups not given" do
+      params = Package.machine 
+        |> Map.from_struct
+        |> Map.drop([:callbacks, :groups])
+
+      assert {:ok, %State{}} = Maxine.Machine 
+        |> struct(params) 
+        |> generate
+        |> advance(:ship)
     end
 
     test "advances via event legally with default options", %{state: state} do
