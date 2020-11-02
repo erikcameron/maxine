@@ -326,6 +326,6 @@ defmodule Maxine do
   @spec groups_for(Machine.name, %Machine{}) :: [Machine.name]
   defp groups_for(name, machine) do
     groups = machine.groups || %{}
-    Map.get(machine.groups, name, []) |> List.wrap
+    Map.get(groups, name, []) |> List.wrap
   end
 end

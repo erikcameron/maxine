@@ -37,7 +37,7 @@ defmodule Maxine.Ecto do
 
   def cast_state(changeset, event, machine, options \\ []) do
     field = Keyword.get(options, :field, :state)
-    state = Map.get(changeset.data, field, machine.initial) |> state_to_atom
+    state = (Ecto.Changeset.get_field(changeset, field) || machine.initial) |> state_to_atom
 
     with %State{} = current <- generate(machine, state),
       {:ok, next} <- advance(current, event, options)

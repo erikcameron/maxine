@@ -14,7 +14,7 @@ defmodule MaxineTest.EctoTest do
     end
 
     test "uses machine's initial state when changeset state is nil" do
-      changeset = {%{}, %{state: :string}}
+      changeset = {%{state: nil}, %{state: :string}}
         |> Ecto.Changeset.change
         |> cast_state(:automate, Package.machine)
 
@@ -25,7 +25,6 @@ defmodule MaxineTest.EctoTest do
       assert Ecto.Changeset.get_field(changeset, :state) == Atom.to_string(state.name)
     end
 
-    
     test "invalid on disallowed state change" do
       changeset = {%{state: "origin"}, %{state: :string}}
         |> Ecto.Changeset.change
