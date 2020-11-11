@@ -3,6 +3,11 @@
 
 State machines as data, for Elixir. Includes lightweight Ecto integration.
 
+## What's new
+
+- *0.2.3* Composable machines
+- *0.2.2* Ecto integration
+
 ## About
 
 After shopping for a simple Elixir state machine package, I liked 
@@ -258,6 +263,16 @@ Will call `advance/3` on the basis of the record's current state
 and the given event, setting the value on the field or setting an
 error on the changeset if the transition is invalid.
 
+## Composition
+
+Because machines are simple maps, you can compose them with a simple
+deep merge. We use the (optional) dependency `deep_merge` for this. 
+The interface:
+
+```
+Maxine.Compose.compose([machine1, machine2, ...])
+```
+
 
 ## To do
 
@@ -277,7 +292,7 @@ by adding `maxine` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:maxine, "~> 0.2"}
+    {:maxine, "~> 0.2.3"}
   ]
 end
 ```
