@@ -1,6 +1,7 @@
 defmodule Maxine.ComposeTest do
   use ExUnit.Case
 
+  import Maxine.Compose
   alias Maxine.Machine
 
   setup do
@@ -26,7 +27,7 @@ defmodule Maxine.ComposeTest do
       }
     }
 
-    merged = Maxine.Compose.compose([m1, m2])
+    merged = compose([m1, m2])
 
     %{m1: m1, m2: m2, merged: merged}
   end
@@ -43,6 +44,16 @@ defmodule Maxine.ComposeTest do
 
     test "m2 gets preference", %{merged: merged, m2: m2} do
       assert merged.initial == m2.initial
+    end
+
+    test "handles case of a single machine, or list thereof", %{m1: m1} do
+      assert compose(m1) == m1
+      assert compose([m1]) == m1
+    end
+
+    test "raises on non-machine" do
+      assert_raise ArgumentError, fn -> compose("foo") end
+      assert_raise ArgumentError, fn -> compose(["foo"]) end
     end
   end
 end
