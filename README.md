@@ -5,6 +5,7 @@ State machines as data, for Elixir. Includes lightweight Ecto integration.
 
 ## What's new
 
+- *0.2.4* Bug fixes
 - *0.2.3* Composable machines
 - *0.2.2* Ecto integration
 
