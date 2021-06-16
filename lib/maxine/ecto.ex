@@ -45,7 +45,7 @@ defmodule Maxine.Ecto do
       Ecto.Changeset.cast(changeset, %{field => "#{next.name}"}, [field])
     else
       {:error, error} -> 
-        Ecto.Changeset.add_error(changeset, field, error.message)
+        Ecto.Changeset.add_error(changeset, field, "#{error.message}")
     end
   end
 
