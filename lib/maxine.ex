@@ -236,7 +236,7 @@ defmodule Maxine do
   @spec run_callbacks(
     current :: %State{}, 
     event   :: Machine.event_name
-  ) :: %Data{} | %CallbackError{} 
+  ) :: %State{} | %CallbackError{}
 
   defp run_callbacks(current, event) do
     cb_list = build_callbacks(current.machine, current.previous, current.name, event)
