@@ -42,10 +42,30 @@ defmodule Maxine.Ecto do
     with %State{} = current <- generate(machine, state),
       {:ok, next} <- advance(current, event, options)
     do
-      Ecto.Changeset.cast(changeset, %{field => "#{next.name}"}, [field])
+      changeset
+      |> Ecto.Changeset.cast(%{field => "#{next.name}"}, [field])
+      |> validate_state(event, next.name, current.name, options)
     else
       {:error, error} -> 
         Ecto.Changeset.add_error(changeset, field, "#{error.message}")
+    end
+  end
+
+  defp validate_state(changeset, event, next, current, options) do
+    validator_tuple = {event, next, current}
+
+    case Keyword.get(options, :validate_with) do
+      nil -> changeset
+      validator when is_function(validator, 2) ->
+        validator.(changeset, validator_tuple)
+      validator when is_atom(validator) ->
+        if function_exported?(validator, :validate_state, 2) do
+          apply(validator, :validate_state, [changeset, validator_tuple])
+        else
+          changeset
+        end
+      _ -> raise ArgumentError,
+        "validator must be a function or a module with validate_state/2"
     end
   end
 

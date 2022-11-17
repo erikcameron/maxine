@@ -26,7 +26,7 @@ defmodule Maxine.Compose do
     case machine do
       %Machine{} -> Map.from_struct(machine)
       _ -> 
-        raise ArgumentError, "can only compose machines, got: #{IO.inspect(machine)}"
+        raise ArgumentError, "can only compose machines"
     end
   end
 end
