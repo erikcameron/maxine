@@ -5,6 +5,7 @@ State machines as data, for Elixir. Includes lightweight Ecto integration.
 
 ## What's new
 
+- *0.3.0* State-based validation in Ecto integration
 - *0.2.4* Bug fixes
 - *0.2.3* Composable machines
 - *0.2.2* Ecto integration
@@ -263,6 +264,26 @@ You can specify a field with the `field` option; default is `state`.
 Will call `advance/3` on the basis of the record's current state 
 and the given event, setting the value on the field or setting an
 error on the changeset if the transition is invalid.
+
+In addition to validating the change itself, you can also perform
+state- and event-dependent validations on the changeset by passing
+`cast_state` a module that implements `validate_state/2`, or an
+equivalent function. The first argument is the changeset (after the
+state has been advanced) and the second is a tuple of `{event,
+new_state, old_state}`:
+
+```elixir
+defmodule StateValidator do
+  def validate_state(changeset, {:navigate, _, :unsaved}) do
+    # runs any time the event is :navigate and there are unsaved
+    # changes, regardless of the new state
+  end
+end
+```
+
+As you can see, Elixir's pattern matching makes sophisticated conditional
+validation pretty easy.
+
 
 ## Composition
 
