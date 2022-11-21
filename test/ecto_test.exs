@@ -12,37 +12,45 @@ defmodule MaxineTest.EctoTest do
 
   describe "cast_state/4" do
     test "valid on legit state change" do
-      changeset = {%{state: "origin"}, %{state: :string}}
+      changeset = {%{state: "origin", event: "ship"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:ship, Package.machine)
+        |> cast_state(Package.machine)
 
       assert changeset.valid?
     end
 
     test "uses machine's initial state when changeset state is nil" do
-      changeset = {%{state: nil}, %{state: :string}}
+      changeset = {%{event: :automate}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:automate, Package.machine)
+        |> cast_state(Package.machine)
 
       state = Package.machine
         |> Maxine.generate
         |> Maxine.advance!(:automate)
       
-      assert Ecto.Changeset.get_field(changeset, :state) == Atom.to_string(state.name)
+      assert Ecto.Changeset.get_field(changeset, :state) == state.name
     end
 
     test "invalid on disallowed state change" do
-      changeset = {%{state: "origin"}, %{state: :string}}
+      changeset = {%{state: "origin", event: "return"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:return, Package.machine)
+        |> cast_state(Package.machine)
 
-      assert changeset.errors[:state]
+      assert changeset.errors[:event]
     end   
 
-    test "follows user specified field name" do 
-      changeset = {%{foo: "origin"}, %{foo: :string}}
+    test "follows user specified state field name" do 
+      changeset = {%{foo: "origin", event: "ship"}, %{foo: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:ship, Package.machine, field: :foo)
+        |> cast_state(Package.machine, state: :foo)
+
+      assert changeset.valid?
+    end   
+
+    test "follows user specified event field name" do 
+      changeset = {%{state: "origin", foo: "ship"}, %{state: :any, foo: :any}}
+        |> Ecto.Changeset.change
+        |> cast_state(Package.machine, event: :foo)
 
       assert changeset.valid?
     end   
@@ -52,17 +60,17 @@ defmodule MaxineTest.EctoTest do
         Ecto.Changeset.add_error(changeset, :boom, "boom")
       end
 
-      changeset = {%{state: "origin"}, %{state: :string}}
+      changeset = {%{state: "origin", event: "ship"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:ship, Package.machine, validate_with: invalidator)
+        |> cast_state(Package.machine, validate_with: invalidator)
 
       assert changeset.errors[:boom]
     end
 
     test "calls validations when given as a module" do
-      changeset = {%{state: "origin"}, %{state: :string}}
+      changeset = {%{state: "origin", event: "ship"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
-        |> cast_state(:ship, Package.machine, validate_with: StateInvalidator)
+        |> cast_state(Package.machine, validate_with: StateInvalidator)
 
       assert changeset.errors[:boom]
     end

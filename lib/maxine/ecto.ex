@@ -7,6 +7,8 @@ defmodule Maxine.Ecto do
   import Maxine
   alias Maxine.State
   alias Maxine.Machine
+  alias Maxine.Errors.NoSuchStateError
+  alias Maxine.Errors.NoSuchEventError
 
   @doc """
   Changeset helper that uses the current state of the underlying
@@ -30,24 +32,28 @@ defmodule Maxine.Ecto do
 
   @spec cast_state(
     changeset :: %Ecto.Changeset{},
-    event :: Machine.event_name,
     machine :: %Machine{},
     options :: Machine.event_options
   ) :: %Ecto.Changeset{}
 
-  def cast_state(changeset, event, machine, options \\ []) do
-    field = Keyword.get(options, :field, :state)
-    state = (Ecto.Changeset.get_field(changeset, field) || machine.initial) |> state_to_atom
+  def cast_state(changeset, machine, options \\ []) do
+    state_field = Keyword.get(options, :state, :state)
+    event_field = Keyword.get(options, :event, :event)
 
-    with %State{} = current <- generate(machine, state),
-      {:ok, next} <- advance(current, event, options)
+    with {:ok, atomized_state} <- atomize_state(changeset, state_field, machine),
+         {:ok, atomized_event} <- atomize_event(changeset, event_field),
+         %State{} = current <- generate(machine, atomized_state),
+         {:ok, next} <- advance(current, atomized_event, options)
     do
       changeset
-      |> Ecto.Changeset.cast(%{field => "#{next.name}"}, [field])
-      |> validate_state(event, next.name, current.name, options)
+      |> Ecto.Changeset.cast(%{state_field => next.name}, [state_field])
+      |> validate_state(atomized_event, next.name, current.name, options)
     else
-      {:error, error} -> 
-        Ecto.Changeset.add_error(changeset, field, "#{error.message}")
+      {:error, %NoSuchStateError{} = error} ->
+        Ecto.Changeset.add_error(changeset, state_field, "#{error.message}")
+
+      {:error, error} ->
+        Ecto.Changeset.add_error(changeset, event_field, "#{error.message}")
     end
   end
 
@@ -69,7 +75,34 @@ defmodule Maxine.Ecto do
     end
   end
 
-  defp state_to_atom(nil), do: raise ArgumentError, "missing state"
-  defp state_to_atom(state) when is_atom(state), do: state
-  defp state_to_atom(state) when is_binary(state), do: String.to_atom(state)
+  defp atomize_state(changeset, state_field, machine) do
+    string_state = Ecto.Changeset.get_field(changeset, state_field)
+
+    if string_state do
+      case maybe_atomize(string_state) do
+        :nil -> {:error, %NoSuchStateError{message: "no such state #{string_state}"} }
+        atomized_string -> {:ok, atomized_string}
+      end
+    else
+      {:ok, machine.initial}
+    end
+  end
+
+  defp atomize_event(changeset, event_field) do
+    string_event = Ecto.Changeset.get_field(changeset, event_field)
+
+    case maybe_atomize(string_event) do
+      :nil -> {:error, %NoSuchEventError{message: "no such event #{string_event}"} }
+      atomized_string -> {:ok, atomized_string}
+    end
+  end
+
+  defp maybe_atomize(term) when is_atom(term), do: term
+  defp maybe_atomize(term) when is_binary(term) do
+    try do
+      String.to_existing_atom(term)
+    rescue
+      ArgumentError -> nil
+    end
+  end
 end

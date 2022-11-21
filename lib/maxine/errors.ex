@@ -10,6 +10,13 @@ defmodule Maxine.Errors do
     defexception message: "No such event"
   end
 
+  defmodule NoSuchStateError do
+    @moduledoc """
+    On a non-existent state.
+    """
+    defexception message: "No such state"
+  end
+
   defmodule UnavailableEventError do
     @moduledoc """
     When the event has no transition mapped for the present
@@ -52,6 +59,7 @@ defmodule Maxine.Errors do
 
   @type error :: 
     %NoSuchEventError{}
+    | %NoSuchStateError{}
     | %UnavailableEventError{}
     | %NoSuchCallbackError{}
     | %CallbackReturnError{}
