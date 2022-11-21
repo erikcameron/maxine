@@ -198,7 +198,7 @@ defmodule Maxine do
         # Before you ask: Wrapping the error in a list here because
         # exceptions are just maps, and our logic is set to look
         # for maps for the event table. #hackish
-        Map.get(current.machine.transitions, event,  List.wrap(%NoSuchEventError{message: event})),
+        Map.get(current.machine.transitions, event, List.wrap(%NoSuchEventError{message: "#{event}"})),
       next_state_name when not is_nil(next_state_name) <- 
         Map.get(event_table, this_state_name),
       state = %State{} <- 
