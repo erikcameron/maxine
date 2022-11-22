@@ -1,7 +1,7 @@
 defmodule Maxine.Ecto do
   @moduledoc """
   Ecto bindings for Maxine. Provides:
-  - `cast_state/4` for updating state on a changeset
+  - `cast_state/3` for updating state on a changeset
   """
 
   import Maxine
@@ -19,8 +19,12 @@ defmodule Maxine.Ecto do
 
   ## Options
 
-  * `:field` - the field in which the changeset keeps its state;
+  * `:state` - the field in which the changeset keeps its state;
   default is `:state`
+  * `:event` - the field in which the changeset keeps its current event;
+  default is `:event`
+  * `:validate_with` - A module implementing `validate_state/2` or an equivalent
+  function of arity two for validation
 
   Options will be passed to the underlying call to `advance/3` as
   event options.
@@ -46,7 +50,7 @@ defmodule Maxine.Ecto do
          {:ok, next} <- advance(current, atomized_event, options)
     do
       changeset
-      |> Ecto.Changeset.cast(%{state_field => next.name}, [state_field])
+      |> Ecto.Changeset.cast(%{state_field => "#{next.name}", [state_field])
       |> validate_state(atomized_event, next.name, current.name, options)
     else
       {:error, %NoSuchStateError{} = error} ->
