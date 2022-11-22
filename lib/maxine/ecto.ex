@@ -50,7 +50,7 @@ defmodule Maxine.Ecto do
          {:ok, next} <- advance(current, atomized_event, options)
     do
       changeset
-      |> Ecto.Changeset.cast(%{state_field => "#{next.name}", [state_field])
+      |> Ecto.Changeset.cast(%{state_field => "#{next.name}"}, [state_field])
       |> validate_state(atomized_event, next.name, current.name, options)
     else
       {:error, %NoSuchStateError{} = error} ->
