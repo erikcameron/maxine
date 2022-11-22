@@ -10,7 +10,7 @@ defmodule MaxineTest.EctoTest do
     end
   end
 
-  describe "cast_state/4" do
+  describe "cast_state/3" do
     test "valid on legit state change" do
       changeset = {%{state: "origin", event: "ship"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
@@ -28,7 +28,7 @@ defmodule MaxineTest.EctoTest do
         |> Maxine.generate
         |> Maxine.advance!(:automate)
       
-      assert Ecto.Changeset.get_field(changeset, :state) == state.name
+      assert Ecto.Changeset.get_field(changeset, :state) == "#{state.name}"
     end
 
     test "invalid on disallowed state change" do
