@@ -1,5 +1,5 @@
 # Maxine 
-[![Build Status](https://travis-ci.com/erikcameron/maxine.svg?branch=main)](https://travis-ci.com/erikcameron/maxine)
+[![Build Status](https://app.travis-ci.com/erikcameron/maxine.svg?branch=main)](https://travis-ci.com/erikcameron/maxine)
 
 State machines as data, for Elixir. Includes lightweight Ecto integration.
 
