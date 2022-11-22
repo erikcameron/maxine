@@ -5,6 +5,7 @@ State machines as data, for Elixir. Includes lightweight Ecto integration.
 
 ## What's new
 
+- _1.0.1_ Inevitable bugfix after hasty release
 - **Version 1.0 is out, with a breaking change to the Ecto
 integration.** The function formerly known as `cast_state/4` is now
 `cast_state/3`, and reads the event name out of the changeset. This is
