@@ -5,10 +5,10 @@ State machines as data, for Elixir. Includes lightweight Ecto integration.
 
 ## What's new
 
-- *0.3.0* State-based validation in Ecto integration
-- *0.2.4* Bug fixes
-- *0.2.3* Composable machines
-- *0.2.2* Ecto integration
+- **Version 1.0 is out, with a breaking change to the Ecto
+integration.** The function formerly known as `cast_state/4` is now
+`cast_state/3`, and reads the event name out of the changeset. This is
+probably how it should have been written to begin with.
 
 ## About
 
@@ -253,14 +253,16 @@ See the examples for concrete illustration.
 
 ## Ecto integration
 
-Use `Maxine.Ecto.cast_state/4` to integrate with Ecto changesets thus:
+Use `Maxine.Ecto.cast_state/3` to integrate with Ecto changesets thus:
 
 ```
 some_record
-|> cast_state(event, my_machine)
+|> cast_state(my_machine, options)
 ```
 
-You can specify a field with the `field` option; default is `state`.
+This function will look in the changeset for the current state under
+`:state` (or a field you pass in with the `state:` option) and the
+event under `:event` (or a field you pass in with the `event:` option).
 Will call `advance/3` on the basis of the record's current state 
 and the given event, setting the value on the field or setting an
 error on the changeset if the transition is invalid.
