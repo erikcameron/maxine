@@ -47,7 +47,7 @@ defmodule Maxine.Ecto do
     with {:ok, atomized_state} <- atomize_state(changeset, state_field, machine),
          {:ok, atomized_event} <- atomize_event(changeset, event_field),
          %State{} = current <- generate(machine, atomized_state),
-         {:ok, next} <- advance(current, atomized_event, options)
+         {:ok, next} <- maybe_advance(current, atomized_event, options)
     do
       changeset
       |> Ecto.Changeset.cast(%{state_field => "#{next.name}"}, [state_field])
@@ -59,6 +59,11 @@ defmodule Maxine.Ecto do
       {:error, error} ->
         Ecto.Changeset.add_error(changeset, event_field, "#{error.message}")
     end
+  end
+
+  defp maybe_advance(current, nil, _options), do: {:ok, current}
+  defp maybe_advance(current, atomized_event, options) do
+    advance(current, atomized_event, options)
   end
 
   defp validate_state(changeset, event, next, current, options) do
@@ -95,9 +100,13 @@ defmodule Maxine.Ecto do
   defp atomize_event(changeset, event_field) do
     string_event = Ecto.Changeset.get_field(changeset, event_field)
 
-    case maybe_atomize(string_event) do
-      :nil -> {:error, %NoSuchEventError{message: "no such event #{string_event}"} }
-      atomized_string -> {:ok, atomized_string}
+    if string_event do
+      case maybe_atomize(string_event) do
+        :nil -> {:error, %NoSuchEventError{message: "no such event #{string_event}"} }
+        atomized_string -> {:ok, atomized_string}
+      end
+    else
+      {:ok, nil}
     end
   end
 
