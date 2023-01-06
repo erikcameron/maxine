@@ -11,6 +11,14 @@ defmodule MaxineTest.EctoTest do
   end
 
   describe "cast_state/3" do
+    test "valid with no event" do
+      changeset = {%{state: "origin"}, %{state: :any, event: :any}}
+        |> Ecto.Changeset.change
+        |> cast_state(Package.machine)
+
+      assert changeset.valid?
+    end
+
     test "valid on legit state change" do
       changeset = {%{state: "origin", event: "ship"}, %{state: :any, event: :any}}
         |> Ecto.Changeset.change
