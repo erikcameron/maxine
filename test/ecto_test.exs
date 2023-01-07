@@ -5,7 +5,7 @@ defmodule MaxineTest.EctoTest do
   alias Maxine.Examples.Package
 
   defmodule StateInvalidator do
-    def validate_state(changeset, _machine_info) do
+    def validate_state(changeset, _machine_info, _options) do
       Ecto.Changeset.add_error(changeset, :boom, "boom")
     end
   end
@@ -16,6 +16,7 @@ defmodule MaxineTest.EctoTest do
         |> Ecto.Changeset.change
         |> cast_state(Package.machine)
 
+      assert Ecto.Changeset.get_field(changeset, :state) == "origin"
       assert changeset.valid?
     end
 
@@ -24,6 +25,7 @@ defmodule MaxineTest.EctoTest do
         |> Ecto.Changeset.change
         |> cast_state(Package.machine)
 
+      assert Ecto.Changeset.get_field(changeset, :state) == "in_transit"
       assert changeset.valid?
     end
 
@@ -64,7 +66,7 @@ defmodule MaxineTest.EctoTest do
     end   
 
     test "calls validations when given as a function" do
-      invalidator = fn changeset, _machine_info ->
+      invalidator = fn changeset, _machine_info, _options ->
         Ecto.Changeset.add_error(changeset, :boom, "boom")
       end
 

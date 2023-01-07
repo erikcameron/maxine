@@ -1,6 +1,35 @@
 defmodule Maxine.Examples do
   ### Package: The postal experience
 
+  defmodule PackageWorkflow do
+    @moduledoc """
+    Example Ecto-based workflow.
+    """
+
+    use Maxine.Workflow
+
+    defmodule Ship do
+      @behaviour Maxine.Workflow.Filter
+
+      def filter(changeset, _options) do
+        Ecto.Changeset.cast(changeset, %{name: "filtered"}, [:name])
+      end
+    end
+
+    defmodule InTransit do
+      @behaviour Maxine.Workflow.Filter
+
+      def filter(changeset, _options) do
+        name = Ecto.Changeset.get_field(changeset, :name)
+        Ecto.Changeset.cast(changeset, %{name: "#{name} and appended"}, [:name])
+      end
+    end
+
+    def machine, do: Maxine.Examples.Package.machine
+    def events, do: %{ ship: Ship }
+    def states, do: %{ in_transit: InTransit }
+  end
+
   defmodule PackageCB do
     @moduledoc """
     Callback functions for the Package state machine.

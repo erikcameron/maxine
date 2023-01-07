@@ -51,7 +51,7 @@ defmodule Maxine.Ecto do
     do
       changeset
       |> Ecto.Changeset.cast(%{state_field => "#{next.name}"}, [state_field])
-      |> validate_state(atomized_event, next.name, current.name, options)
+      |> filter_and_validate_state(atomized_event, next.name, current.name, options)
     else
       {:error, %NoSuchStateError{} = error} ->
         Ecto.Changeset.add_error(changeset, state_field, "#{error.message}")
@@ -66,21 +66,21 @@ defmodule Maxine.Ecto do
     advance(current, atomized_event, options)
   end
 
-  defp validate_state(changeset, event, next, current, options) do
+  defp filter_and_validate_state(changeset, event, next, current, options) do
     validator_tuple = {event, next, current}
 
     case Keyword.get(options, :validate_with) do
       nil -> changeset
-      validator when is_function(validator, 2) ->
-        validator.(changeset, validator_tuple)
+      validator when is_function(validator, 3) ->
+        validator.(changeset, validator_tuple, options)
       validator when is_atom(validator) ->
-        if function_exported?(validator, :validate_state, 2) do
-          apply(validator, :validate_state, [changeset, validator_tuple])
+        if function_exported?(validator, :validate_state, 3) do
+          apply(validator, :validate_state, [changeset, validator_tuple, options])
         else
           changeset
         end
       _ -> raise ArgumentError,
-        "validator must be a function or a module with validate_state/2"
+        "validator must be a function or a module with validate_state/3"
     end
   end
 
