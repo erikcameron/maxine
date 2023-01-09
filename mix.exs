@@ -6,7 +6,7 @@ defmodule Maxine.MixProject do
       name: "Maxine",
       app: :maxine,
       description: "State machines as data for Elixir",
-      version: "1.0.1",
+      version: "1.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
