@@ -67,15 +67,15 @@ defmodule Maxine.Ecto do
   end
 
   defp filter_and_validate_state(changeset, event, next, current, options) do
-    validator_tuple = {event, next, current}
+    machine_tuple = {event, next, current}
 
     case Keyword.get(options, :validate_with) do
       nil -> changeset
       validator when is_function(validator, 3) ->
-        validator.(changeset, validator_tuple, options)
+        validator.(changeset, machine_tuple, options)
       validator when is_atom(validator) ->
         if function_exported?(validator, :validate_state, 3) do
-          apply(validator, :validate_state, [changeset, validator_tuple, options])
+          apply(validator, :validate_state, [changeset, machine_tuple, options])
         else
           changeset
         end

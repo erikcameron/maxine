@@ -11,7 +11,7 @@ defmodule Maxine.Examples do
     defmodule Ship do
       @behaviour Maxine.Workflow.Filter
 
-      def filter(changeset, _options) do
+      def filter(changeset, {:ship, _this_state, _prior_state}, _options) do
         Ecto.Changeset.cast(changeset, %{name: "filtered"}, [:name])
       end
     end
@@ -19,7 +19,7 @@ defmodule Maxine.Examples do
     defmodule InTransit do
       @behaviour Maxine.Workflow.Filter
 
-      def filter(changeset, _options) do
+      def filter(changeset, {_event, :in_transit, _prior_state}, _options) do
         name = Ecto.Changeset.get_field(changeset, :name)
         Ecto.Changeset.cast(changeset, %{name: "#{name} and appended"}, [:name])
       end

@@ -5,6 +5,8 @@ State machines as data, for Elixir. Includes lightweight Ecto integration.
 
 ## What's new
 
+- _1.1.0_ `Maxine.Workflow`-- builds on the existing Ecto integration
+to give easy per-event and per-state filter and validation behavior
 - _1.0.1_ Inevitable bugfix after hasty release
 - **Version 1.0 is out, with a breaking change to the Ecto
 integration.** The function formerly known as `cast_state/4` is now
@@ -254,6 +256,8 @@ See the examples for concrete illustration.
 
 ## Ecto integration
 
+### `cast_state/3`
+
 Use `Maxine.Ecto.cast_state/3` to integrate with Ecto changesets thus:
 
 ```
@@ -284,9 +288,34 @@ defmodule StateValidator do
 end
 ```
 
-As you can see, Elixir's pattern matching makes sophisticated conditional
-validation pretty easy.
+### `cast_workflow/3`
 
+As you can see, Elixir's pattern matching makes sophisticated conditional
+validation pretty easy. `Maxine.Workflow` captures one such usage pattern
+in an Elixir behaviour. Workflow modules implement the following three functions:
+
+- `machine/0`: returns the `Maxine.Machine` in question
+- `events/0`: returns a map where the keys are event name atoms, and the values
+  are modules implementing the `Maxine.Workflow.Filter` behaviour
+- `states/0': same as above, but the keys are state name atoms
+
+`Maxine.Workflows.Filter` is simple to implement:
+
+- `filter/3`: A function that takes a changeset, a tuple of the event, the new state
+  and the old state, and the changeset options list. Returns another changeset, possibly
+  transformed or validated.
+
+Then, add this to your changeset pipeline:
+
+```elixir
+changeset
+|> cast_workflow(MyWorkflow, options)
+```
+
+This is structured so that you can have single modules per event/state you want to define.
+When an event is present, and `events/0` specifies a filter module, the changeset gets
+passed to `filter/3`. The same process is then repeated for the resulting state. When no
+event is present, filters are still run for the current state.
 
 ## Composition
 

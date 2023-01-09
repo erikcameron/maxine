@@ -9,15 +9,9 @@ defmodule Maxine.Workflow do
   information. 
   """
 
-  defmodule Filter do
-    @callback filter(
-      changeset :: %Ecto.Changeset{}, 
-      options :: keyword()
-    ) :: %Ecto.Changeset{}
-  end
-
   alias Maxine.Machine
 
+  @type machine_tuple :: {:atom, :atom, :atom}
   @type event_name :: :atom
   @type state_name :: :atom
   @type filter_module :: :atom
@@ -26,31 +20,41 @@ defmodule Maxine.Workflow do
   @callback events :: %{} | %{ event_name => filter_module }
   @callback states :: %{} | %{ state_name => filter_module }
 
+  defmodule Filter do
+    @callback filter(
+      changeset :: %Ecto.Changeset{},
+      machine_tuple :: Maxine.Workflow.machine_tuple(),
+      options :: keyword()
+    ) :: %Ecto.Changeset{}
+  end
+
   defmacro __using__(_opts) do
     quote do
       @behaviour Maxine.Workflow
 
-      def validate_state(changeset, {event, next, _current}, options) do
+      def validate_state(changeset, machine_tuple, options) do
         changeset
-        |> filter_event(event, options)
-        |> filter_state(next, options)
+        |> filter_event(machine_tuple, options)
+        |> filter_state(machine_tuple, options)
       end
 
-      defp filter_event(changeset, event, options) do
+      defp filter_event(changeset, machine_tuple, options) do
+        {event, _this_state, _prior_state} = machine_tuple
         filter_module = event && Map.get(__MODULE__.events, event)
 
         if filter_module do
-          filter_module.filter(changeset, options)
+          filter_module.filter(changeset, machine_tuple, options)
         else
           changeset
         end
       end
 
-      defp filter_state(changeset, state, options) do
-        filter_module = Map.get(__MODULE__.states, state)
+      defp filter_state(changeset, machine_tuple, options) do
+        {_event, this_state, _prior_state} = machine_tuple
+        filter_module = Map.get(__MODULE__.states, this_state)
 
         if filter_module do
-          filter_module.filter(changeset, options)
+          filter_module.filter(changeset, machine_tuple, options)
         else
           changeset
         end
