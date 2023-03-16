@@ -103,7 +103,7 @@ defmodule MyMachine do
       },
       events: %{
         *: :log_event
-      }
+      },
       index: %{
         start_billing: fn(from, to, event, data) -> meter_on(data) end,
         stop_billing: fn(from, to, event, data) -> meter_off(data) end,
@@ -140,7 +140,7 @@ state2.name == :on  # <=== true
 The `%State{}` struct represents an actual machine state,
 and looks like this:
 
-```
+```elixir
 st = %State{
   name: :current_state_name,
   previous: :previous_state_name,
@@ -260,7 +260,7 @@ See the examples for concrete illustration.
 
 Use `Maxine.Ecto.cast_state/3` to integrate with Ecto changesets thus:
 
-```
+```elixir
 some_record
 |> cast_state(my_machine, options)
 ```
@@ -323,7 +323,7 @@ Because machines are simple maps, you can compose them with a simple
 deep merge. We use the (optional) dependency `deep_merge` for this. 
 The interface:
 
-```
+```elixir
 Maxine.Compose.compose([machine1, machine2, ...])
 ```
 
